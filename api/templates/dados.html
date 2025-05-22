@@ -4,7 +4,7 @@
     <title>Dados Recebidos</title>
 </head>
 <body>
-    <h1>Dados Recebidos</h1>
+    <h1>Últimos Dados Recebidos</h1>
     {% if dados %}
         <ul>
         {% for chave, valor in dados.items() %}
@@ -12,7 +12,7 @@
         {% endfor %}
         </ul>
     {% else %}
-        <p>Nenhum dado recebido.</p>
+        <p>Nenhum dado recebido ainda.</p>
     {% endif %}
 </body>
 </html>

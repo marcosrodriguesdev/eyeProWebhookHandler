@@ -1,17 +1,21 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 templates = Jinja2Templates(directory="api/templates")
 
-
-@app.get("/", response_class=HTMLResponse)
-async def form_get(request: Request):
-    return templates.TemplateResponse("dados.html", {"request": request, "dados": None})
+# Armazena os dados recebidos (em memória)
+dados_recebidos = {}
 
 
-@app.post("/", response_class=HTMLResponse)
+@app.post("/")
+async def receber_dados(request: Request):
+    global dados_recebidos
+    dados_recebidos = await request.json()
+    return {"status": "ok"}
+
+
+@app.get("/dados", response_class=HTMLResponse)
 async def exibir_dados(request: Request):
-    json_data = await request.json()
-    return templates.TemplateResponse("dados.html", {"request": request, "dados": json_data})
+    return templates.TemplateResponse("dados.html", {"request": request, "dados": dados_recebidos})
