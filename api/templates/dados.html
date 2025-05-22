@@ -5,10 +5,20 @@
 </head>
 <body>
     <h1>Últimos Dados Recebidos</h1>
-    {% if dados %}
+    {% if transactions %}
         <ul>
-        {% for chave, valor in dados.items() %}
-            <li><strong>{{ chave }}:</strong> {{ valor }}</li>
+        {% for transaction in transactions %}
+            <li>
+                <strong>Local ID:</strong> {{ transaction.local_id }}<br>
+                <strong>Status:</strong> {{ transaction.status }}<br>
+                <strong>Time:</strong> {{ transaction.time }}<br>
+                <strong>Itens:</strong>
+                <ul>
+                {% for item in transaction.items %}
+                    <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
+                {% endfor %}
+                </ul>
+            </li>
         {% endfor %}
         </ul>
     {% else %}

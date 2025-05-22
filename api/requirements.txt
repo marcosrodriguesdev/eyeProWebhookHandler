@@ -1,3 +1,6 @@
 fastapi
-jinja2
 uvicorn
+jinja2
+sqlalchemy
+asyncpg
+databases
