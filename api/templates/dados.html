@@ -5,6 +5,7 @@
 </head>
 <body>
     <h1>Últimos Dados Recebidos</h1>
+
     {% if transactions %}
         <ul>
         {% for transaction in transactions %}
@@ -12,11 +13,13 @@
                 <strong>Local ID:</strong> {{ transaction.local_id }}<br>
                 <strong>Status:</strong> {{ transaction.status }}<br>
                 <strong>Time:</strong> {{ transaction.time }}<br>
+
                 <strong>Itens:</strong>
                 <ul>
-                {% for item in transaction.items %}
-                    <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
-                {% endfor %}
+                    {% set transaction_id = transaction.id %}
+                    {% for item in transaction.transaction_items %}
+                        <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
+                    {% endfor %}
                 </ul>
             </li>
         {% endfor %}
