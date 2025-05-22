@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dados Recebidos</title>
+</head>
+<body>
+    <h1>Formulário</h1>
+    <form method="post">
+        Nome: <input type="text" name="nome"><br>
+        Idade: <input type="number" name="idade"><br>
+        <button type="submit">Enviar</button>
+    </form>
+
+    {% if dados %}
+        <h2>Dados Recebidos:</h2>
+        <p>Nome: {{ dados.nome }}</p>
+        <p>Idade: {{ dados.idade }}</p>
+    {% endif %}
+</body>
+</html>
