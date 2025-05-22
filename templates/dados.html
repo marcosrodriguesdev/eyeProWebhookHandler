@@ -4,17 +4,15 @@
     <title>Dados Recebidos</title>
 </head>
 <body>
-    <h1>Formulário</h1>
-    <form method="post">
-        Nome: <input type="text" name="nome"><br>
-        Idade: <input type="number" name="idade"><br>
-        <button type="submit">Enviar</button>
-    </form>
-
+    <h1>Dados Recebidos</h1>
     {% if dados %}
-        <h2>Dados Recebidos:</h2>
-        <p>Nome: {{ dados.nome }}</p>
-        <p>Idade: {{ dados.idade }}</p>
+        <ul>
+        {% for chave, valor in dados.items() %}
+            <li><strong>{{ chave }}:</strong> {{ valor }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum dado recebido.</p>
     {% endif %}
 </body>
 </html>

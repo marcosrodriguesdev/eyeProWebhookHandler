@@ -12,6 +12,6 @@ async def form_get(request: Request):
 
 
 @app.post("/", response_class=HTMLResponse)
-async def form_post(request: Request, nome: str = Form(...), idade: int = Form(...)):
-    dados = {"nome": nome, "idade": idade}
-    return templates.TemplateResponse("dados.html", {"request": request, "dados": dados})
+async def exibir_dados(request: Request):
+    json_data = await request.json()
+    return templates.TemplateResponse("dados.html", {"request": request, "dados": json_data})
