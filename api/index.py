@@ -69,7 +69,11 @@ async def receber_dados(request: Request):
                     status_code=500
                 )
 
-            transaction_id = response.json().get("id")
+            if response.content:
+                transaction_id = response.json().get("id")
+            else:
+                print("⚠️ Resposta inesperada ao criar transação:", response.text)
+                return JSONResponse(content={"error": "Resposta inesperada do Supabase"}, status_code=500)
 
             # Criar itens da transação
             for item in transaction_items:
