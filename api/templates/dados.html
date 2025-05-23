@@ -106,7 +106,7 @@ function mover(card) {
     document.getElementById("ding").play();
     localStorage.setItem('ultimaSenhaId', card.dataset.id); // Salva a última senha chamada
 
-    fetch(`/update_status/${card.dataset.id}`, {
+    fetch(`/api/update_status/${card.dataset.id}`, {
       method: "PATCH"
     }).then(response => {
       if (!response.ok) {
