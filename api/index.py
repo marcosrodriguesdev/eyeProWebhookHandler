@@ -29,19 +29,17 @@ async def receber_dados(request: Request):
         data = await request.json()
         print("📥 Dados recebidos do webhook:", data)
 
-        external_id = str(data.get("id"))  # ID da transação do webhook
+        external_id = str(data.get("id"))
         local_id = int(data.get("local_id", 0))
         time = data.get("time")
         transaction_items = data.get("transaction_items", [])
 
         if not external_id or not local_id or not time or not transaction_items:
-            return JSONResponse(
-                content={"error": "Campos obrigatórios ausentes"},
-                status_code=400
-            )
+            print("⚠️ Dados incompletos")
+            return JSONResponse(content={"status": "ignorado", "motivo": "dados incompletos"}, status_code=200)
 
         async with httpx.AsyncClient() as client:
-            # Verificar se a transação já existe
+            # Verificar duplicidade
             check_response = await client.get(
                 f"{SUPABASE_URL}/rest/v1/transactions?external_id=eq.{external_id}",
                 headers=headers
@@ -50,7 +48,7 @@ async def receber_dados(request: Request):
                 print("⚠️ Transação já registrada:", external_id)
                 return JSONResponse(content={"status": "duplicado"}, status_code=200)
 
-            # Criar nova transação
+            # Criar transação
             response = await client.post(
                 f"{SUPABASE_URL}/rest/v1/transactions",
                 headers=headers,
@@ -63,19 +61,13 @@ async def receber_dados(request: Request):
             )
             print("📤 Resposta da criação da transação:", response.status_code, response.text)
 
-            if response.status_code != 201:
-                return JSONResponse(
-                    content={"error": "Erro ao criar transação", "details": response.text},
-                    status_code=500
-                )
+            if response.status_code != 201 or not response.content:
+                print("⚠️ Erro ao criar transação")
+                return JSONResponse(content={"status": "erro", "detalhes": response.text}, status_code=200)
 
-            if response.content:
-                transaction_id = response.json().get("id")
-            else:
-                print("⚠️ Resposta inesperada ao criar transação:", response.text)
-                return JSONResponse(content={"error": "Resposta inesperada do Supabase"}, status_code=500)
+            transaction_id = response.json().get("id")
 
-            # Criar itens da transação
+            # Criar itens
             for item in transaction_items:
                 item_response = await client.post(
                     f"{SUPABASE_URL}/rest/v1/transaction_items",
@@ -88,14 +80,14 @@ async def receber_dados(request: Request):
                         "total": item.get("total")
                     }
                 )
-                print("📤 Resposta da criação do item:", item_response.status_code, item_response.text)
+                print("📤 Item criado:", item_response.status_code, item_response.text)
 
         print("✅ Transação e itens criados com sucesso")
         return JSONResponse(content={"status": "ok"}, status_code=200)
 
     except Exception as e:
-        print("❌ Erro ao processar webhook:", str(e))
-        return JSONResponse(content={"error": "Erro interno", "details": str(e)}, status_code=500)
+        print("❌ Erro inesperado:", str(e))
+        return JSONResponse(content={"status": "erro", "detalhes": str(e)}, status_code=200)
 
 
 @app.patch("/update_status/{transaction_id}")
