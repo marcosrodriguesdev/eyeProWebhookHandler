@@ -64,28 +64,48 @@
  </div>
 
  <script>
- function mover(card) {
-   const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-   const destinoColuna = document.getElementById(destino);
-   destinoColuna.insertBefore(card, destinoColuna.children[1]);
+function showLog(message) {
+  const logElement = document.createElement('div');
+  logElement.innerText = message;
+  logElement.style.position = 'fixed';
+  logElement.style.bottom = '20px';
+  logElement.style.right = '20px';
+  logElement.style.backgroundColor = '#28a745';
+  logElement.style.color = '#fff';
+  logElement.style.padding = '10px';
+  logElement.style.borderRadius = '5px';
+  logElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+  document.body.appendChild(logElement);
+  setTimeout(() => {
+    logElement.remove();
+  }, 3000);
+}
 
-   if (destino === "pronto") {
-     card.classList.add("highlight");
-     document.getElementById("ding").play();
+function mover(card) {
+  const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+  const destinoColuna = document.getElementById(destino);
+  destinoColuna.insertBefore(card, destinoColuna.children[1]);
 
-     fetch(`/update_status/${card.dataset.id}`, {
-       method: "PATCH"
-     }).then(response => {
-       if (!response.ok) {
-         console.error("Erro ao atualizar status");
-       }
-     });
+  if (destino === "pronto") {
+    card.classList.add("highlight");
+    document.getElementById("ding").play();
 
-     setTimeout(() => {
-       card.classList.remove("highlight");
-     }, 3000);
-   }
- }
- </script>
+    fetch(`/update_status/${card.dataset.id}`, {
+      method: "PATCH"
+    }).then(response => {
+      if (response.ok) {
+        showLog("Status atualizado");
+      } else {
+        console.error("Erro ao atualizar status");
+      }
+    });
+
+    setTimeout(() => {
+      card.classList.remove("highlight");
+    }, 3000);
+  }
+}
+</script>
+
 </body>
 </html>
