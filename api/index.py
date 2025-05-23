@@ -24,7 +24,7 @@ async def receber_dados(request: Request):
 
     # Envia para a tabela 'transactions'
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{SUPABASE_URL}/transactions", headers=headers, json={
+        response = await client.post(f"{SUPABASE_URL}/rest/v1/transactions", headers=headers, json={
             "local_id": data["local_id"],
             "status": data["status"],
             "time": data["time"]
@@ -33,7 +33,7 @@ async def receber_dados(request: Request):
 
         # Envia os itens para 'transaction_items'
         for item in data["transaction_items"]:
-            await client.post(f"{SUPABASE_URL}/transaction_items", headers=headers, json={
+            await client.post(f"{SUPABASE_URL}/rest/v1/transaction_items", headers=headers, json={
                 "transaction_id": transaction_id,
                 "product_name": item["product_name"],
                 "price": item["price"],
@@ -47,7 +47,11 @@ async def receber_dados(request: Request):
 @app.get("/dados", response_class=HTMLResponse)
 async def exibir_dados(request: Request):
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{SUPABASE_URL}/transactions?select=*,transaction_items(*)", headers=headers)
+        response = await client.get(
+            f"{SUPABASE_URL}/rest/v1/transactions?select=*,transaction_items(*)",
+            headers=headers
+        )
+
         transactions = response.json()
 
     return templates.TemplateResponse("dados.html", {"request": request, "transactions": transactions})
