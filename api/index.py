@@ -59,7 +59,7 @@ async def atualizar_status(transaction_id: int):
         response = await client.patch(
             f"{SUPABASE_URL}/rest/v1/transactions?id=eq.{transaction_id}",
             headers=headers,
-            json={"status": False}  # Pronto
+            json={"status": True}  # Pronto
         )
     return {"status": "updated"}
 
