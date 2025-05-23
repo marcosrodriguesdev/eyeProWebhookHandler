@@ -1,7 +1,7 @@
 import os
 import httpx
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
@@ -26,21 +26,15 @@ templates = Jinja2Templates(directory="api/templates")
 @app.post("/")
 async def receber_dados(request: Request):
     data = await request.json()
-
     async with httpx.AsyncClient() as client:
-        # Cria a transação com status False (em preparo)
         response = await client.post(f"{SUPABASE_URL}/rest/v1/transactions", headers=headers, json={
             "local_id": int(data["local_id"]),
             "status": False,
             "time": data["time"]
         })
-
     if response.status_code != 201:
         return {"error": "Erro ao criar transação", "details": response.text}
-
     transaction_id = response.json().get("id")
-
-    # Cria os itens da transação
     for item in data["transaction_items"]:
         await client.post(f"{SUPABASE_URL}/rest/v1/transaction_items", headers=headers, json={
             "transaction_id": transaction_id,
@@ -49,7 +43,6 @@ async def receber_dados(request: Request):
             "quantity": item["quantity"],
             "total": item["total"]
         })
-
     return {"status": "ok"}
 
 
@@ -59,7 +52,7 @@ async def atualizar_status(transaction_id: int):
         response = await client.patch(
             f"{SUPABASE_URL}/rest/v1/transactions?id=eq.{transaction_id}",
             headers=headers,
-            json={"status": True}  # Pronto
+            json={"status": True}
         )
     return {"status": "updated"}
 
@@ -68,28 +61,39 @@ async def atualizar_status(transaction_id: int):
 async def exibir_dados(request: Request):
     today = datetime.now().strftime("%Y-%m-%d")
     async with httpx.AsyncClient() as client:
-        # Transações em preparo
         response_em_preparo = await client.get(
-            f"{SUPABASE_URL}/rest/v1/transactions"
-            f"?select=*,transaction_items(*)"
-            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59"
-            f"&status=eq.false",
+            f"{SUPABASE_URL}/rest/v1/transactions?select=*,transaction_items(*)"
+            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59&status=eq.false",
             headers=headers
         )
         em_preparo = response_em_preparo.json()
-
-        # Transações prontas
         response_prontos = await client.get(
-            f"{SUPABASE_URL}/rest/v1/transactions"
-            f"?select=*,transaction_items(*)"
-            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59"
-            f"&status=eq.true",
+            f"{SUPABASE_URL}/rest/v1/transactions?select=*,transaction_items(*)"
+            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59&status=eq.true",
             headers=headers
         )
         prontos = response_prontos.json()
-
     return templates.TemplateResponse("dados.html", {
         "request": request,
         "em_preparo": em_preparo,
         "prontos": prontos
     })
+
+
+@app.get("/api/dados", response_class=JSONResponse)
+async def api_dados():
+    today = datetime.now().strftime("%Y-%m-%d")
+    async with httpx.AsyncClient() as client:
+        response_em_preparo = await client.get(
+            f"{SUPABASE_URL}/rest/v1/transactions?select=*,transaction_items(*)"
+            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59&status=eq.false",
+            headers=headers
+        )
+        em_preparo = response_em_preparo.json()
+        response_prontos = await client.get(
+            f"{SUPABASE_URL}/rest/v1/transactions?select=*,transaction_items(*)"
+            f"&time=gte.{today}T00:00:00&time=lt.{today}T23:59:59&status=eq.true",
+            headers=headers
+        )
+        prontos = response_prontos.json()
+    return {"em_preparo": em_preparo, "prontos": prontos}
