@@ -1,33 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Dados Recebidos</title>
-    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Chamada de Senhas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .column {
+            width: 45%;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .column h2 {
+            text-align: center;
+            color: #333;
+        }
+        .card {
+            background-color: #e9ecef;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+        }
+        .card:hover {
+            background-color: #d6d8db;
+        }
+    </style>
 </head>
 <body>
-<h1>Últimos Dados Recebidos</h1>
+    <div class="column" id="em-preparo">
+        <h2>🟡 Em preparo</h2>
+        {% for transaction in transactions %}
+        <div class="card" onclick="mover(this)">Senha {{ transaction.local_id }}</div>
+        {% endfor %}
+    </div>
 
-{% if transactions %}
-<ul>
-    {% for transaction in transactions %}
-    <li>
-        <strong>Local ID:</strong> {{ transaction.local_id }}<br>
-        <strong>Status:</strong> {{ transaction.status }}<br>
-        <strong>Time:</strong> {{ transaction.time }}<br>
+    <div class="column" id="pronto">
+        <h2>🟢 Pronto</h2>
+    </div>
 
-        <strong>Itens:</strong>
-        <ul>
-            {% set transaction_id = transaction.id %}
-            {% for item in transaction.transaction_items %}
-            <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>Nenhum dado recebido ainda.</p>
-{% endif %}
+    <script>
+        function mover(card) {
+            const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+            document.getElementById(destino).appendChild(card);
+        }
+    </script>
 </body>
 </html>
