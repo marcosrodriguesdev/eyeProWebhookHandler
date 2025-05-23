@@ -48,10 +48,11 @@
  <div class="column" id="em-preparo">
  <h2>🟡 Em preparo</h2>
  {% for transaction in em_preparo %}
- <div class="card" data-id="{{ transaction.id }}" onclick="mover(this)">
-   {{ transaction.local_id }}
- </div>
- {% endfor %}
+  <div class="card" data-id="{{ transaction.id }}" onclick="mover(this)">
+    {{ transaction.local_id }}
+  </div>
+{% endfor %}
+
  </div>
 
  <div class="column" id="pronto">
@@ -90,6 +91,7 @@ function mover(card) {
     card.classList.add("highlight");
     document.getElementById("ding").play();
 
+    // Envia PATCH para o backend
     fetch(`/update_status/${card.dataset.id}`, {
       method: "PATCH"
     }).then(response => {
@@ -106,6 +108,7 @@ function mover(card) {
   }
 }
 </script>
+
 
 </body>
 </html>
