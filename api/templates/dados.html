@@ -1,120 +1,128 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel de Chamada de Senhas</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: space-around;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    .column {
-      width: 45%;
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .card {
-      background-color: #e9ecef;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      padding: 20px;
-      margin: 10px 0;
-      cursor: pointer;
-      text-align: center;
-      font-size: 5em;
-      font-weight: bold;
-      transition: background-color 0.3s, transform 0.3s;
-    }
-    .card:hover {
-      background-color: #d6d8db;
-    }
-    .highlight {
-      animation: pulse 1s ease-in-out 3;
-    }
-    @keyframes pulse {
-      0% { background-color: #ffe066; transform: scale(1.1); }
-      50% { background-color: #fff3bf; transform: scale(1.2); }
-      100% { background-color: #ffe066; transform: scale(1.1); }
-    }
-    h2 {
-      font-size: 2.5em;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Painel de Chamada de Senhas</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: space-around;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .column {
+          width: 45%;
+          padding: 10px;
+          background-color: #fff;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .card {
+          background-color: #e9ecef;
+          border: 1px solid #bbb;
+          border-radius: 6px;
+          padding: 20px;
+          margin: 10px 0;
+          cursor: pointer;
+          text-align: center;
+          font-size: 5em;
+          font-weight: bold;
+          transition: background-color 0.3s, transform 0.3s;
+        }
+        .card:hover {
+          background-color: #d6d8db;
+        }
+        .highlight {
+          animation: pulse 1s ease-in-out 3;
+        }
+        @keyframes pulse {
+          0% { background-color: #ffe066; transform: scale(1.1); }
+          50% { background-color: #fff3bf; transform: scale(1.2); }
+          100% { background-color: #ffe066; transform: scale(1.1); }
+        }
+        h2 {
+          font-size: 2.5em;
+          text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <audio id="ding" src="/static/ding.mp3" preload="auto"></audio>
+<audio id="ding" src="/static/ding.mp3" preload="auto"></audio>
 
-  <div class="column" id="em-preparo">
+<div class="column" id="em-preparo">
     <h2>🟡 PREPARANDO</h2>
-  </div>
+</div>
 
-  <div class="column" id="pronto">
+<div class="column" id="pronto">
     <h2>🟢 PRONTO</h2>
-  </div>
+</div>
 
-  <script>
+<script>
     async function carregarDados() {
-      const res = await fetch('/api/dados');
-      const data = await res.json();
+  const res = await fetch('/api/dados');
+  const data = await res.json();
+  const emPreparo = document.getElementById('em-preparo');
+  const pronto = document.getElementById('pronto');
 
-      const emPreparo = document.getElementById('em-preparo');
-      const pronto = document.getElementById('pronto');
+  emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
+  pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
 
-      emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
-      pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
+  data.em_preparo.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.id = t.id;
+    div.onclick = () => mover(div);
+    div.innerText = t.local_id;
+    emPreparo.appendChild(div);
+  });
 
-      data.em_preparo.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.dataset.id = t.id;
-        div.onclick = () => mover(div);
-        div.innerText = t.local_id;
-        emPreparo.appendChild(div);
-      });
+  let ultimaSenhaId = localStorage.getItem('ultimaSenhaId');
 
-      data.prontos.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.dataset.id = t.id;
-        div.onclick = () => mover(div);
-        div.innerText = t.local_id;
-        pronto.appendChild(div);
-      });
+  data.prontos.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.id = t.id;
+    div.onclick = () => mover(div);
+    div.innerText = t.local_id;
+
+    if (t.id === ultimaSenhaId) {
+      pronto.insertBefore(div, pronto.children[1]); // Mantém no topo
+    } else {
+      pronto.appendChild(div);
     }
+  });
+}
 
-    function mover(card) {
-      const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-      const destinoColuna = document.getElementById(destino);
-      destinoColuna.insertBefore(card, destinoColuna.children[1]);
+function mover(card) {
+  const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+  const destinoColuna = document.getElementById(destino);
+  destinoColuna.insertBefore(card, destinoColuna.children[1]);
 
-      if (destino === "pronto") {
-        card.classList.add("highlight");
-        document.getElementById("ding").play();
+  if (destino === "pronto") {
+    card.classList.add("highlight");
+    document.getElementById("ding").play();
+    localStorage.setItem('ultimaSenhaId', card.dataset.id); // Salva a última senha chamada
 
-        fetch(`/update_status/${card.dataset.id}`, {
-          method: "PATCH"
-        }).then(response => {
-          if (!response.ok) {
-            console.error("Erro ao atualizar status");
-          }
-        });
-
-        setTimeout(() => {
-          card.classList.remove("highlight");
-        }, 3000);
+    fetch(`/update_status/${card.dataset.id}`, {
+      method: "PATCH"
+    }).then(response => {
+      if (!response.ok) {
+        console.error("Erro ao atualizar status");
       }
-    }
+    });
+
+    setTimeout(() => {
+      card.classList.remove("highlight");
+    }, 3000);
+  }
+}
+
 
     setInterval(carregarDados, 30000);
     carregarDados();
-  </script>
+</script>
 </body>
 </html>
