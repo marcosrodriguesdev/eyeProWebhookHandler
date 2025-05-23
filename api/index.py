@@ -57,11 +57,10 @@ async def receber_dados(request: Request):
                     "time": time
                 }
             )
-            print("📤 Resposta da criação da transação:", response.status_code, response.text)
+            print("📤 Resposta da criação da transação:", response.status_code)
 
-            if response.status_code != 201 or not response.content:
+            if response.status_code != 201:
                 print("⚠️ Erro ao criar transação")
-                return JSONResponse(content={"status": "erro", "detalhes": response.text}, status_code=200)
 
             try:
                 transaction_id = response.json().get("id")
@@ -101,7 +100,7 @@ async def atualizar_status(transaction_id: int):
             headers=headers,
             json={"status": True}
         )
-        print("📤 Resposta do Supabase:", response.status_code, response.text)
+        print("📤 Resposta do Supabase:", response.status_code)
     return {"status": "updated"}
 
 
