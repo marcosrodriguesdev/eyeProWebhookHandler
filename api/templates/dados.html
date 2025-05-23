@@ -79,46 +79,34 @@
     emPreparo.appendChild(div);
   });
 
-  let ultimaSenhaId = localStorage.getItem('ultimaSenhaId');
+  const ultimaSenhaId = localStorage.getItem('ultimaSenhaId');
 
-  data.prontos.forEach(t => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.dataset.id = t.id;
-    div.onclick = () => mover(div);
-    div.innerText = t.local_id;
-
-    if (t.id === ultimaSenhaId) {
-      pronto.insertBefore(div, pronto.children[1]); // Mantém no topo
-    } else {
+  // Primeiro, adiciona a última senha chamada (se existir)
+  if (ultimaSenhaId) {
+    const ultima = data.prontos.find(t => t.id === ultimaSenhaId);
+    if (ultima) {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.dataset.id = ultima.id;
+      div.onclick = () => mover(div);
+      div.innerText = ultima.local_id;
       pronto.appendChild(div);
     }
-  });
-}
-
-function mover(card) {
-  const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-  const destinoColuna = document.getElementById(destino);
-  destinoColuna.insertBefore(card, destinoColuna.children[1]);
-
-  if (destino === "pronto") {
-    card.classList.add("highlight");
-    document.getElementById("ding").play();
-    localStorage.setItem('ultimaSenhaId', card.dataset.id); // Salva a última senha chamada
-
-    fetch(`/update_status/${card.dataset.id}`, {
-      method: "PATCH"
-    }).then(response => {
-      if (!response.ok) {
-        console.error("Erro ao atualizar status");
-      }
-    });
-
-    setTimeout(() => {
-      card.classList.remove("highlight");
-    }, 3000);
   }
+
+  // Depois, adiciona as demais senhas, exceto a última
+  data.prontos
+    .filter(t => t.id !== ultimaSenhaId)
+    .forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.dataset.id = t.id;
+      div.onclick = () => mover(div);
+      div.innerText = t.local_id;
+      pronto.appendChild(div);
+    });
 }
+
 
 
     setInterval(carregarDados, 30000);
