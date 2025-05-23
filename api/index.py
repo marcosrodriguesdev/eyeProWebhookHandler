@@ -22,6 +22,7 @@ headers = {
 
 templates = Jinja2Templates(directory="api/templates")
 
+
 @app.post("/")
 async def receber_dados(request: Request):
     data = await request.json()
@@ -51,6 +52,7 @@ async def receber_dados(request: Request):
 
     return {"status": "ok"}
 
+
 @app.patch("/update_status/{transaction_id}")
 async def atualizar_status(transaction_id: int):
     async with httpx.AsyncClient() as client:
@@ -60,6 +62,7 @@ async def atualizar_status(transaction_id: int):
             json={"status": True}  # Pronto
         )
     return {"status": "updated"}
+
 
 @app.get("/dados", response_class=HTMLResponse)
 async def exibir_dados(request: Request):
