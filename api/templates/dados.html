@@ -1,95 +1,84 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Chamada de Senhas</title>
-    <style>
-        body {
-          font-family: Arial, sans-serif;
-          display: flex;
-          justify-content: space-around;
-          padding: 20px;
-          background-color: #f4f4f4;
-        }
-        .column {
-          width: 45%;
-          padding: 10px;
-          background-color: #fff;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        #333;
-        }
-        .card {
-          background-color: #e9ecef;
-          border: 1px solid #bbb;
-          border-radius: 6px;
-          padding: 20px;
-          margin: 10px 0;
-          cursor: pointer;
-          text-align: center;
-          font-size: 3em;
-          font-weight: bold;
-          transition: background-color 0.3s, transform 0.3s;
-        }
-        .card:hover {
-          background-color: #d6d8db;
-        }
-
-        /* Animação de destaque */
-        .highlight {
-          animation: pulse 1s ease-in-out 3;
-        }
-
-        @keyframes pulse {
-          0% { background-color: #ffe066; transform: scale(1.1); }
-          50% { background-color: #fff3bf; transform: scale(1.2); }
-          100% { background-color: #ffe066; transform: scale(1.1); }
-        }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Painel de Chamada de Senhas</title>
+ <style>
+ body {
+ font-family: Arial, sans-serif;
+ display: flex;
+ justify-content: space-around;
+ padding: 20px;
+ background-color: #f4f4f4;
+ }
+ .column {
+ width: 45%;
+ padding: 10px;
+ background-color: #fff;
+ border: 1px solid #ccc;
+ border-radius: 8px;
+ box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+ #333;
+ }
+ .card {
+ background-color: #e9ecef;
+ border: 1px solid #bbb;
+ border-radius: 6px;
+ padding: 20px;
+ margin: 10px 0;
+ cursor: pointer;
+ text-align: center;
+ font-size: 3em;
+ font-weight: bold;
+ transition: background-color 0.3s, transform 0.3s;
+ }
+ .card:hover {
+ background-color: #d6d8db;
+ }
+ .highlight {
+ animation: pulse 1s ease-in-out 3;
+ }
+ @key background-color: #ffe066; transform: scale(1.1); }
+ 50% { background-color: #fff3bf; transform: scale(1.2); }
+ 100% { background-color: #ffe066; transform: scale(1.1); }
+ }
+ </style>
 </head>
 <body>
-    <audio id="ding" src="/static/ding.mp3" preload="auto"></audio>
+ <audio id="ding" src="/static/ding.mp3" preload="auto"></audio>
+ <div class="column" id="em-preparo">
+ <h2>🟡 Em preparo</h2>
+ {% for transaction in transactions %}
+ <div class="card" data-id="{{ transaction.id }}" onclick="mover(this)">{{ transaction.local_id }}</div>
+ {% endfor %}
+ </div>
+ <div class="column" id="pronto">
+ <h2>🟢 Pronto</h2>
+ </div>
+ <script>
+ function mover(card) {
+ const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+ const destinoColuna = document.getElementById(destino);
+ destinoColuna.insertBefore(card, destinoColuna.children[1]);
 
-    <div class="column" id="em-preparo">
-        <h2>🟡 Em preparo</h2>
-        {% for transaction in transactions %}
-        <div class="card" onclick="mover(this)">{{ transaction.local_id }}</div>
-        {% endfor %}
-    </div>
+ if (destino === "pronto") {
+   card.classList.add("highlight");
+   document.getElementById("ding").play();
 
-    <div class="column" id="pronto">
-        <h2>🟢 Pronto</h2>
-    </div>
+   fetch(`/update_status/${card.dataset.id}`, {
+     method: "PATCH"
+   }).then(response => {
+     if (!response.ok) {
+       console.error("Erro ao atualizar status");
+     }
+   });
 
-    <script>
-        function mover(card) {
-          const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-          const destinoColuna = document.getElementById(destino);
-          destinoColuna.insertBefore(card, destinoColuna.children[1]);
-
-
-          if (destino === "pronto") {
-              card.classList.add("highlight");
-              document.getElementById("ding").play();
-
-              // Chamada PATCH para atualizar o status
-              fetch(`/update_status/${card.innerText}`, {
-                method: "PATCH"
-              }).then(response => {
-                if (!response.ok) {
-                  console.error("Erro ao atualizar status");
-                }
-              });
-
-              setTimeout(() => {
-                card.classList.remove("highlight");
-              }, 3000);
-           }
-        }
-
-
-    </script>
+   setTimeout(() => {
+     card.classList.remove("highlight");
+   }, 3000);
+ }
+ }
+ </script>
 </body>
 </html>
