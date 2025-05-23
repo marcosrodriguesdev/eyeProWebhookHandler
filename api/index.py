@@ -29,15 +29,36 @@ async def receber_dados(request: Request):
         data = await request.json()
         print("📥 Dados recebidos do webhook:", data)
 
+        external_id = str(data.get("id"))  # ID da transação do webhook
+        local_id = int(data.get("local_id", 0))
+        time = data.get("time")
+        transaction_items = data.get("transaction_items", [])
+
+        if not external_id or not local_id or not time or not transaction_items:
+            return JSONResponse(
+                content={"error": "Campos obrigatórios ausentes"},
+                status_code=400
+            )
+
         async with httpx.AsyncClient() as client:
-            # Criar transação
+            # Verificar se a transação já existe
+            check_response = await client.get(
+                f"{SUPABASE_URL}/rest/v1/transactions?external_id=eq.{external_id}",
+                headers=headers
+            )
+            if check_response.status_code == 200 and check_response.json():
+                print("⚠️ Transação já registrada:", external_id)
+                return JSONResponse(content={"status": "duplicado"}, status_code=200)
+
+            # Criar nova transação
             response = await client.post(
                 f"{SUPABASE_URL}/rest/v1/transactions",
                 headers=headers,
                 json={
-                    "local_id": int(data["local_id"]),
+                    "external_id": external_id,
+                    "local_id": local_id,
                     "status": False,
-                    "time": data["time"]
+                    "time": time
                 }
             )
             print("📤 Resposta da criação da transação:", response.status_code, response.text)
@@ -51,16 +72,16 @@ async def receber_dados(request: Request):
             transaction_id = response.json().get("id")
 
             # Criar itens da transação
-            for item in data["transaction_items"]:
+            for item in transaction_items:
                 item_response = await client.post(
                     f"{SUPABASE_URL}/rest/v1/transaction_items",
                     headers=headers,
                     json={
                         "transaction_id": transaction_id,
-                        "product_name": item["product_name"],
-                        "price": item["price"],
-                        "quantity": item["quantity"],
-                        "total": item["total"]
+                        "product_name": item.get("product_name"),
+                        "price": item.get("price"),
+                        "quantity": item.get("quantity"),
+                        "total": item.get("total")
                     }
                 )
                 print("📤 Resposta da criação do item:", item_response.status_code, item_response.text)
