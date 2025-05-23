@@ -2,30 +2,32 @@
 <html>
 <head>
     <title>Dados Recebidos</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+
 </head>
 <body>
-    <h1>Últimos Dados Recebidos</h1>
+<h1>Últimos Dados Recebidos</h1>
 
-    {% if transactions %}
+{% if transactions %}
+<ul>
+    {% for transaction in transactions %}
+    <li>
+        <strong>Local ID:</strong> {{ transaction.local_id }}<br>
+        <strong>Status:</strong> {{ transaction.status }}<br>
+        <strong>Time:</strong> {{ transaction.time }}<br>
+
+        <strong>Itens:</strong>
         <ul>
-        {% for transaction in transactions %}
-            <li>
-                <strong>Local ID:</strong> {{ transaction.local_id }}<br>
-                <strong>Status:</strong> {{ transaction.status }}<br>
-                <strong>Time:</strong> {{ transaction.time }}<br>
-
-                <strong>Itens:</strong>
-                <ul>
-                    {% set transaction_id = transaction.id %}
-                    {% for item in transaction.transaction_items %}
-                        <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
+            {% set transaction_id = transaction.id %}
+            {% for item in transaction.transaction_items %}
+            <li>{{ item.product_name }} - {{ item.price }} - {{ item.quantity }} - {{ item.total }}</li>
+            {% endfor %}
         </ul>
-    {% else %}
-        <p>Nenhum dado recebido ainda.</p>
-    {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum dado recebido ainda.</p>
+{% endif %}
 </body>
 </html>
