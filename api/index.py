@@ -32,7 +32,15 @@ async def receber_dados(request: Request):
             "status": data["status"],
             "time": data["time"]
         })
+
+        if response.status_code != 201:
+            print("Erro ao criar transação:", response.status_code, response.text)
+            return {"error": "Falha ao criar transação"}
+
         transaction_id = response.json().get("id")
+        if not transaction_id:
+            print("ID da transação não retornado:", response.text)
+            return {"error": "ID da transação não retornado"}
 
         # Envia os itens para 'transaction_items'
         for item in data["transaction_items"]:
