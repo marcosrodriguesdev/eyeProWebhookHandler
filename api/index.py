@@ -25,25 +25,52 @@ templates = Jinja2Templates(directory="api/templates")
 
 @app.post("/")
 async def receber_dados(request: Request):
-    data = await request.json()
-    async with httpx.AsyncClient() as client:
-        response = await client.post(f"{SUPABASE_URL}/rest/v1/transactions", headers=headers, json={
-            "local_id": int(data["local_id"]),
-            "status": False,
-            "time": data["time"]
-        })
-    if response.status_code != 201:
-        return {"error": "Erro ao criar transação", "details": response.text}
-    transaction_id = response.json().get("id")
-    for item in data["transaction_items"]:
-        await client.post(f"{SUPABASE_URL}/rest/v1/transaction_items", headers=headers, json={
-            "transaction_id": transaction_id,
-            "product_name": item["product_name"],
-            "price": item["price"],
-            "quantity": item["quantity"],
-            "total": item["total"]
-        })
-    return {"status": "ok"}
+    try:
+        data = await request.json()
+        print("📥 Dados recebidos do webhook:", data)
+
+        async with httpx.AsyncClient() as client:
+            # Criar transação
+            response = await client.post(
+                f"{SUPABASE_URL}/rest/v1/transactions",
+                headers=headers,
+                json={
+                    "local_id": int(data["local_id"]),
+                    "status": False,
+                    "time": data["time"]
+                }
+            )
+            print("📤 Resposta da criação da transação:", response.status_code, response.text)
+
+            if response.status_code != 201:
+                return JSONResponse(
+                    content={"error": "Erro ao criar transação", "details": response.text},
+                    status_code=500
+                )
+
+            transaction_id = response.json().get("id")
+
+            # Criar itens da transação
+            for item in data["transaction_items"]:
+                item_response = await client.post(
+                    f"{SUPABASE_URL}/rest/v1/transaction_items",
+                    headers=headers,
+                    json={
+                        "transaction_id": transaction_id,
+                        "product_name": item["product_name"],
+                        "price": item["price"],
+                        "quantity": item["quantity"],
+                        "total": item["total"]
+                    }
+                )
+                print("📤 Resposta da criação do item:", item_response.status_code, item_response.text)
+
+        print("✅ Transação e itens criados com sucesso")
+        return JSONResponse(content={"status": "ok"}, status_code=200)
+
+    except Exception as e:
+        print("❌ Erro ao processar webhook:", str(e))
+        return JSONResponse(content={"error": "Erro interno", "details": str(e)}, status_code=500)
 
 
 @app.patch("/update_status/{transaction_id}")
