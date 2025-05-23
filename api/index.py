@@ -1,13 +1,14 @@
+import os
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
-import os
-import httpx
 
 app = FastAPI()
 
+# Servir arquivos estáticos (como o som)
 app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -83,15 +84,15 @@ async def receber_dados(request: Request):
                 )
                 print("📤 Item criado:", item_response.status_code, item_response.text)
 
-        print("✅ Transação e itens criados com sucesso")
-        return JSONResponse(content={"status": "ok"}, status_code=200)
+            print("✅ Transação e itens criados com sucesso")
+            return JSONResponse(content={"status": "ok"}, status_code=200)
 
     except Exception as e:
         print("❌ Erro inesperado:", str(e))
         return JSONResponse(content={"status": "erro", "detalhes": str(e)}, status_code=200)
 
 
-@app.patch("/update_status/{transaction_id}")
+@app.patch("/api/update_status/{transaction_id}")
 async def atualizar_status(transaction_id: int):
     print(f"🔄 Atualizando status da transação {transaction_id}")
     async with httpx.AsyncClient() as client:
