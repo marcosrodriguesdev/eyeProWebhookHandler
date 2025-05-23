@@ -71,13 +71,23 @@
 
 
           if (destino === "pronto") {
-            card.classList.add("highlight");
-            document.getElementById("ding").play(); // toca o som
-            setTimeout(() => {
-              card.classList.remove("highlight");
-            }, 3000);
-          }
-        }
+              card.classList.add("highlight");
+              document.getElementById("ding").play();
+
+              // Chamada PATCH para atualizar o status
+              fetch(`/update_status/${card.innerText}`, {
+                method: "PATCH"
+              }).then(response => {
+                if (!response.ok) {
+                  console.error("Erro ao atualizar status");
+                }
+              });
+
+              setTimeout(() => {
+                card.classList.remove("highlight");
+              }, 3000);
+            }
+
 
     </script>
 </body>
