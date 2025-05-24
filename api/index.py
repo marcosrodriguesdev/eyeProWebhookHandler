@@ -23,7 +23,7 @@ headers = {
 templates = Jinja2Templates(directory="api/templates")
 
 
-@app.post("/")
+@app.post("/api/")
 async def receber_dados(request: Request):
     try:
         data = await request.json()
