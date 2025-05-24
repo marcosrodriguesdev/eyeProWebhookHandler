@@ -5,6 +5,8 @@
   ],
   "routes": [
     { "src": "/api/update_status/(.*)", "dest": "api/index.py" },
+    { "src": "/ding.mp3", "dest": "public/ding.mp3"},
+    { "src": "/favicon.ico", "dest": "public/favicon.ico"},
     { "src": "/api/(.*)", "dest": "api/index.py" },
     { "src": "/dados", "dest": "api/index.py" }
   ]
