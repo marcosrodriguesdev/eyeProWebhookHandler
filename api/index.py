@@ -3,13 +3,13 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
+#from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 
 app = FastAPI()
 
 # Servir arquivos estáticos (como o som)
-app.mount("/static", StaticFiles(directory="api/static"), name="static")
+#app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY")
